@@ -1,62 +1,62 @@
 <template>
-  <div>
-    <transition-group name="fade">
-      <div key=1 v-if="connect">
-        <CollabEditor
-          :namespace="namespace"
-          :room="room">
-        </CollabEditor>
+  <div id="app">
+    <div v-if="!$global.$connect">
+      <div id="nav">
+        <router-link to="/">Home</router-link> |
+        <router-link to="/about">About</router-link> |
+        <router-link to="/login">Login</router-link>
       </div>
-      <div key=2 v-else>
-<!--
-      <input v-model="namespace">
-      <input v-model="room">
-      <button @click="connectEditor">Join Editor</button>
--->
-        <Login v-on:getInput="getInput" />
-      </div>
-    </transition-group>
+    </div>
+    <router-view
+      v-on:getID="getID"
+      @getDoc="getDoc"
+      :namespace="namespace"
+      :room="room"
+      :clientID="clientID"/>
   </div>
 </template>
 
 <script>
-// import HelloWorld from './components/HelloWorld.vue'
-//import TopBar from './components/TopBar.vue'
-import CollabEditor from './components/CollabEditor.vue'
-import Login from './components/Login.vue'
-// import Markdown from './components/Markdown.vue'
+  export default {
+    data () {
+      return {
+        //connect: false,
+        namespace: "",
+        room: "",
+        clientID: "",
+      }
+    },
 
-export default {
-  name: 'App',
-  components: {
-    //Markdown,
-    CollabEditor,
-    Login,
-  },
+    methods: {
+      getID: function (c) {
+        //this.namespace = ns;
+        //this.room = r;
+        this.clientID = c;
+        //console.log(this.namespace, this.room);
+        //this.connect = true;
+        this.$router.push({
+          name: 'Doclist', 
+          /*params: {
+            namespace: this.namespace,
+            room: this.room,
+            clientID: this.clientID,
+          }*/
+	});
+      },
 
-  data() {
-    return {
-      editorsConf: [],
-      namespace: "namespace1/project1",
-      room: "doc1",
-      connect: false,
-    }
-  },
+      getDoc (ns, r) {
+        this.namespace = ns;
+        this.room = r;
+        console.log(this.namespace, this.room);
+        this.$global.$connect = true;
+        console.log(this.$global.$connect);
+        this.$router.push({
+          name: 'Editor',
+        });
+      },
 
-  methods: {
-    
-    getInput: function(ns, r) {
-      this.namespace = ns;
-      console.log(ns);
-      this.room = r;
-      console.log(r);
-      this.connect = true
     }
   }
-  /*props: {
-    inputdata: String
-  }*/
-}
 </script>
 
 <style>
@@ -64,23 +64,19 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 2s ease;
+#nav {
+  padding: 30px;
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+#nav a {
+  font-weight: bold;
+  color: #2c3e50;
 }
 
-strong {
-  font-weight:700;
+#nav a.router-link-exact-active {
+  color: #42b983;
 }
-
 </style>

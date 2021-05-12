@@ -10,10 +10,10 @@
           &bull; {{ IDs.length }} {{ IDs.length === 1 ? 'user' : 'users' }} connected to {{ namespace }}/{{ room }}
         </div>
 -->
-        <li class="col s2"><a href="#" class="logo left">GIAS-MD</a></li>
+        <li class="col s2"><a href="#" class="logo left">GAIS-MD</a></li>
         <li class="col s1 ids"><div class="clientnum z-depth-2"><div class="flex"><i class="material-icons" style="line-height:inherit;margin-right:20px">people_outline</i>{{ IDs.length }}</div></div></li>
-        <li class="col s6"><div class="filepath">File path: {{ namespace }}/{{ room }}</div></li>
-        <li class="col s3 right">
+        <li class="col s5"><div class="filepath">File path: {{ namespace }}/{{ room }}</div></li>
+        <li class="col s2">
           <div>
             <a v-if="saving" class="save amber accent-3 z-depth-1">
               Saving...
@@ -22,6 +22,9 @@
               Saved
             </a>
           </div>
+        </li>
+        <li class="col s2">
+          <button class="btn-large" @click="logout()">Logout</button>
         </li>
       </ul>
     </div>
@@ -52,6 +55,16 @@ export default {
       type: Boolean,
     }
   },
+
+  methods: {
+    logout () {
+      this.$global.$connect = false;
+      this.$router.push({
+        name:'Login',
+      });
+      //console.log(this.$global.$connect);
+    }
+  }
 }
 </script>
 

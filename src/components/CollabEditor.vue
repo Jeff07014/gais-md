@@ -57,21 +57,22 @@ export default {
     EditorContent,
     TopBar,
   },
- /* data() {
-    return {
-      editor: new Editor()
-    }
-  },*/
 
   props: {
+    clientID: {
+      type: String,
+      required: true,
+    },
+
     namespace: {
       type: String,
       required: true,
     },
+
     room: {
       type: String,
       required: true,
-    },
+    }
   },
 
   data() {
@@ -97,7 +98,7 @@ export default {
             socketServerBaseURL: 'http://localhost:6002',
             namespace: this.namespace,
             room: this.room,
-            clientID: String(Math.floor(Math.random() * 0xFFFFFFFF)),
+            clientID: this.clientID,
 
             debounce: 250,
             keepFocusOnBlur: false,

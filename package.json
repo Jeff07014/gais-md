@@ -14,17 +14,22 @@
     "tiptap": "^1.32.2",
     "tiptap-extension-collaboration": "^1.4.2",
     "tiptap-extensions": "^1.35.2",
-    "vue": "^2.6.11"
+    "vue": "^2.6.11",
+    "vue-resource": "^1.5.2",
+    "vue-router": "^3.2.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-plugin-router": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-html": "^6.1.2",
     "eslint-plugin-vue": "^6.2.2",
+    "node-sass": "^4.12.0",
     "patch-package": "^6.4.7",
+    "sass-loader": "^8.0.2",
     "vue-template-compiler": "^2.6.11"
   },
   "eslintConfig": {
