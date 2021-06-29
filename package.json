@@ -9,7 +9,9 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "axios": "^0.21.1",
     "core-js": "^3.6.5",
+    "materialize-css": "^1.0.0",
     "randomcolor": "^0.6.2",
     "tiptap": "^1.32.2",
     "tiptap-extension-collaboration": "^1.4.2",

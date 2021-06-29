@@ -1,51 +1,169 @@
 <template>
   <div style="text-align:center">
+
+  <ul id="slide-out" class="sidenav">
+    <li>
+      <h3>Tag filter</h3>
+    </li>
+    <li>
+      <div class="divider"></div>
+    </li>
+    <li v-for="tag in tagPool" :key="tag">
+      <label>
+        <input
+          class="filled-in"
+          type="checkbox"
+          :value="tag"
+          v-model="testArray"
+          @change="filter"
+        />
+        <span>{{tag}}</span>
+      </label>
+    </li>
+  </ul>
     <div>
       <h1>{{ clientID }}</h1>
+      <button data-target="slide-out" class="btn sidenav-trigger" @click="tagset()">taglist</button>
     </div>
-    <div class="row">
-      <div v-for="doc in doclist" :key="doc.id" class="docs col s4"><button @click="getDoc(doc)" class="doc btn-large">{{ doc.room }}</button></div>
+    <div v-for="i in (filelist.length / 3)" :key="i.id" class="row">
+      <div class="" v-for="j in 3" :key="j.id">
+        <div class="col s4" v-if="filelist[((i - 1) * 3) + (j - 1)].isShow == true">
+          <div class="docs card blue-grey" @click="getDoc(filelist[((i - 1) * 3) + (j - 1)])">
+            <div class="card-content white-text" v-for="(value, name) in filelist[((i - 1) * 3) + (j - 1)]" :key="value.id">
+              <span class="card-title" v-if="name == 'room'">{{ value }}</span>
+              <div class="card-action" v-if="name == 'tags'">
+                <div v-for="tag in value" class="chip" :key="tag.id">{{ tag }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import M from 'materialize-css'
+
 export default {
   name: 'DocList',
   props: {
     clientID: {
       type: String,
       required: true,
+    },
+    
+    filelist: {
+      type: Array,
     }
   },
 
   data () {
     return {
-      doclist: [
-        { namespace: "namespace1/project1", room: "doc1" },
-        { namespace: "namespace1/project1", room: "doc2" },
-        { namespace: "namespace1/project1", room: "doc3" },
-      ]
+      tagPool: null,
+      tagChoose: null,
+      testArray: [],
     }
   },
 
   methods: {
     getDoc (doc) {
       this.$emit('getDoc', doc.namespace, doc.room);
+    },
+
+    log () {
+      console.log(this.filelist);
+    },
+
+    tagset () {
+      this.tagPool = new Set();
+      this.tagChoose = new Set();
+
+      this.filelist.forEach((file) => {
+        this.tagPool = this.tagPool.union(file.tags);
+        file.isShow = true;
+      });
+    },
+
+    filter(){
+      this.tagChoose = new Set(this.testArray);
+      var newTagPool = new Set();
+      this.filelist.forEach((file) => {
+        file.isShow = false;
+        if(this.tagChoose.intersection(file.tags).size === this.tagChoose.size){
+          file.isShow = true;
+          newTagPool = newTagPool.union(file.tags);
+        }
+      });
+      this.tagPool = newTagPool;
+    },
+  },
+
+  mounted () {
+    this.elem = document.querySelectorAll('.sidenav');
+    this.instance = M.Sidenav.init(this.elem);
+    /* this.filelist.forEach((file) => {
+        file.isShow = true;
+    });*/
+    this.tagset();
+    console.log(this.filelist);
+    Set.prototype.isSuperset = function(subset) {
+        for (var elem of subset) {
+            if (!this.has(elem)) {
+                return false;
+            }
+        }
+        return true;
     }
-  }
+
+    Set.prototype.union = function(setB) {
+        var union = new Set(this);
+        for (var elem of setB) {
+            union.add(elem);
+        }
+        return union;
+    }
+
+    Set.prototype.intersection = function(setB) {
+        var intersection = new Set();
+        for (var elem of setB) {
+            if (this.has(elem)) {
+                intersection.add(elem);
+            }
+        }
+        return intersection;
+    }
+
+    Set.prototype.difference = function(setB) {
+        var difference = new Set(this);
+        for (var elem of setB) {
+            difference.delete(elem);
+        }
+        return difference;
+    }
+
+  },
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .docs {
-  margin-top:20px;
-  height:80px;
+  height:300px;
+  margin-bottom:20px;
+}
+
+.row {
+  margin:20px;
 }
 
 .doc {
   width:50%;
   height:inherit;
+}
+
+ul li {
+  list-style:none;
+  text-align:left;
 }
 </style>

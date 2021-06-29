@@ -1,18 +1,14 @@
 <template>
   <div id="app">
-    <div v-if="!$global.$connect">
-      <div id="nav">
-        <router-link to="/">Home</router-link> |
-        <router-link to="/about">About</router-link> |
-        <router-link to="/login">Login</router-link>
-      </div>
-    </div>
-    <router-view
-      v-on:getID="getID"
-      @getDoc="getDoc"
-      :namespace="namespace"
-      :room="room"
-      :clientID="clientID"/>
+    <transition name="fade" mode="out-in">
+      <router-view
+        @getID="getID"
+        @getDoc="getDoc"
+        :namespace="namespace"
+        :room="room"
+        :filelist="filelist"
+        :clientID="clientID"/>
+    </transition>
   </div>
 </template>
 
@@ -24,32 +20,36 @@
         namespace: "",
         room: "",
         clientID: "",
+        filelist: [],
       }
     },
 
     methods: {
-      getID: function (c) {
-        //this.namespace = ns;
-        //this.room = r;
-        this.clientID = c;
-        //console.log(this.namespace, this.room);
-        //this.connect = true;
-        this.$router.push({
-          name: 'Doclist', 
-          /*params: {
-            namespace: this.namespace,
-            room: this.room,
-            clientID: this.clientID,
-          }*/
-	});
+      getID (c) {
+        this.setProp(c).then(() => {
+          console.log(this.filelist);
+          this.$router.push({
+            name: 'Doclist', 
+          });
+        })
+      },
+
+      setProp (c) {
+        return new Promise(resolve => {
+          setTimeout(() => {
+            this.clientID = c.account;
+            this.filelist = c.filelist;
+            resolve();
+          });
+        })
       },
 
       getDoc (ns, r) {
         this.namespace = ns;
         this.room = r;
-        console.log(this.namespace, this.room);
+        // console.log(this.namespace, this.room);
         this.$global.$connect = true;
-        console.log(this.$global.$connect);
+        // console.log(this.$global.$connect);
         this.$router.push({
           name: 'Editor',
         });
@@ -79,4 +79,15 @@
 #nav a.router-link-exact-active {
   color: #42b983;
 }
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity .7s ease;
+}
+
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+
 </style>

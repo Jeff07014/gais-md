@@ -1,6 +1,6 @@
 <template>
   <nav>
-    <div class="nav-wrapper bg">
+    <div class="nav-wrapper blue-grey lighten-2">
       <ul id="nav-mobile" class="left hide-on-med-and-down row">
 <!--
         <li><a><i class="material-icons">title</i></a></li>
@@ -11,20 +11,49 @@
         </div>
 -->
         <li class="col s2"><a href="#" class="logo left">GAIS-MD</a></li>
-        <li class="col s1 ids"><div class="clientnum z-depth-2"><div class="flex"><i class="material-icons" style="line-height:inherit;margin-right:20px">people_outline</i>{{ IDs.length }}</div></div></li>
+        <li class="col s1 ids">
+        <!--
+          <div class="indigo lighten-1 clientnum z-depth-1">
+            <div class="flex">
+              <i class="material-icons" style="line-height:inherit;margin-right:20px">people_outline</i>{{ IDs.length }}
+            </div>
+          </div>
+        -->
+        </li>
+        <li class="col s5"></li>
+        <!--
         <li class="col s5"><div class="filepath">File path: {{ namespace }}/{{ room }}</div></li>
         <li class="col s2">
-          <div>
-            <a v-if="saving" class="save amber accent-3 z-depth-1">
+        </li>
+        -->
+        <li class="col s4">
+          <a href="#modal1" class="right f-20 modal-trigger" @click="seg()">Logout</a>
+          <div id="modal1" class="modal modal-fixed-footer">
+            <div class="modal-content">
+              <h4 class="black-text">Tag choosing</h4>
+              <div class="row">
+                <div id="chooseboxes" v-for="(tag, index) in tags" :key="index" class="col s3">
+                  <label>
+                    <input type="checkbox" :id="index" :value="tag" v-model="checked">
+                    <span>{{ tag }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <a href="#" class="modal-close waves-effect waves-green btn-flat" @click="logout()">exit</a>
+            </div>
+          </div>
+          <p class="btn-floating right center cyan lighten-1 p-10">{{ IDs.length }}</p>
+          <i class="right material-icons" style="line-height:inherit;margin-right:20px">people_outline</i>
+          <div class="right p-20">
+            <a v-if="saving" class="save amber accent-3 z-depth-1 black-text">
               Saving...
             </a>
-            <a v-else class="save z-depth-1">
+            <a v-else class="save z-depth-1 teal lighten-1">
               Saved
             </a>
           </div>
-        </li>
-        <li class="col s2">
-          <button class="btn-large" @click="logout()">Logout</button>
         </li>
       </ul>
     </div>
@@ -32,8 +61,18 @@
 </template>
 
 <script>
+import M from 'materialize-css'
+
 export default {
   name: 'TopBar',
+
+  data () {
+    return {
+      elems: '',
+      instances: '',
+      checked: [],
+    }
+  },
 
   props: {
 
@@ -53,16 +92,40 @@ export default {
 
     saving: {
       type: Boolean,
-    }
+    },
+
+    tags: {
+      type: Array,
+    },
+  },
+
+  mounted () {
+    this.elems = document.querySelectorAll('.modal');
+    this.instances = M.Modal.init(this.elems);
   },
 
   methods: {
     logout () {
-      this.$global.$connect = false;
+      this.$emit('finalTag', this.checked);
       this.$router.push({
         name:'Login',
-      });
+      })
+        .then(() => {
+          setTimeout(() => {
+            this.$global.$connect = false;
+            // console.log(this.$global.$connect);
+          }, 1000)
+        });
+      //this.$global.$connect = false;
       //console.log(this.$global.$connect);
+    },
+
+    seg () {
+      this.$emit('seg');
+    },
+
+    finalTag() {
+      this.$emit('finalTag', this.checked);
     }
   }
 }
@@ -95,6 +158,7 @@ export default {
     text-transform: uppercase;
     vertical-align: middle;
     -webkit-tap-highlight-color: transparent;
+    width:100px;
   }
 
   .clientsIDs {
@@ -123,8 +187,8 @@ export default {
   }
 
   .clientnum {
-    background-color:#7d7d7d;
-    border-radius:0.5rem;
+/*    background-color:#7d7d7d;*/
+    border-radius:2px;
     text-align:center;
     height:inherit;
     line-height:45px;
@@ -137,7 +201,6 @@ export default {
   }
   
   .logo{
-    color:#777777;
     font-size:30px;
     padding-left:30px;
     padding-right:30px;
@@ -152,4 +215,15 @@ export default {
     list-style-type: none;
   }
 
+  .f-20 {
+    font-size:20px;
+  }
+
+  .p-10 {
+    margin-right:10px;
+  }
+
+  .p-20 {
+    margin-right:20px;
+  }
 </style>

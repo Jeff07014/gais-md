@@ -1,26 +1,17 @@
 <template>
   <div>
     <TopBar
+      @seg="seg"
+      @finalTag="finalTag"
       :namespace="namespace"
       :room="room"
       :IDs="clientsIDs"
+      :tags="tags"
       :saving="saving">
     </TopBar>
     <div class="mdpanel">
-<!--
-    <editor-menu-bar :editor="editor" v-slot="{ commands, isActive }">
-        <button :class="{ 'is-active': isActive.bold() }" @click="commands.bold">
-          Bold
-        </button>
-    </editor-menu-bar>
--->
       <template v-if="editor && !loading">
-<!--
-        <div class="clientsIDs">
-          &bull; {{ clientsIDs.length }} {{ clientsIDs.length === 1 ? 'user' : 'users' }} connected to {{ namespace }}/{{ room }}
-        </div>
--->
-        <editor-content class="editor__content" :editor="editor"  />
+        <EditorContent class="editor__content" :editor="editor"  />
       </template>
       <em v-else>
         Connecting to socket server …
@@ -41,11 +32,16 @@ import {
   ListItem,
   TodoItem,
   TodoList,
+  Table,
+  TableHeader,
+  TableRow,
+  TableCell,
   Bold,
   Code,
   Italic,
   Link,
   History,
+  Image,
 } from 'tiptap-extensions'
 import {Cursors, Collaboration} from 'tiptap-extension-collaboration'
 import randomColor from 'randomcolor'
@@ -78,7 +74,16 @@ export default {
   data() {
     return {
       loading: true,
+      pureText: '',
+      tags: [],
       editor: new Editor({
+        onUpdate:(({ state }) => {
+          this.pureText = '';
+          let d = JSON.stringify(state.doc);
+          this.extractText(JSON.parse(d));
+          console.log('pt:', state);
+          console.log(this.pureText);
+        }),
         extensions: [
           new Blockquote(),
           new BulletList(),
@@ -87,6 +92,10 @@ export default {
           new Heading({ levels: [1, 2, 3] }),
           new ListItem(),
           new OrderedList(),
+          new Table(),
+          new TableHeader(),
+          new TableRow(),
+          new TableCell(),
           new TodoItem(),
           new TodoList(),
           new Bold(),
@@ -94,6 +103,7 @@ export default {
           new Italic(),
           new Link(),
           new History(),
+          new Image(),
           new Collaboration({
             socketServerBaseURL: 'http://localhost:6002',
             namespace: this.namespace,
@@ -103,8 +113,13 @@ export default {
             debounce: 250,
             keepFocusOnBlur: false,
 
-            onConnected: () => {
+            onConnected: (state) => {
               this.loading = false
+              this.pureText = '';
+              let d = JSON.stringify(state.doc);
+              this.extractText(JSON.parse(d));
+              console.log('pt:', state);
+              // console.log('pt:', this.pureText);
             },
             onClientsUpdate: ({clientsIDs, clientID}) => {
               this.clientsIDs = clientsIDs
@@ -116,6 +131,11 @@ export default {
             },
             onSaving: () => {
               this.saving = true
+            },
+            onResponse: (res) => {
+              // console.log(res);
+              this.tags = res.Keyterms.split(',');
+              console.log(this.tags);
             },
             onSaved: () => {
               setTimeout(() => {
@@ -131,38 +151,6 @@ export default {
       colorsMap: {}
     }
   },
-  /*mounted() {
-      this.editor.destroy()
-      this.editor = new Editor({
-        extensions: [
-          new Blockquote(),
-          new BulletList(),
-          new CodeBlock(),
-          new HardBreak(),
-          new Heading({ levels: [1, 2, 3] }),
-          new ListItem(),
-          new OrderedList(),
-          new TodoItem(),
-          new TodoList(),
-          new Bold(),
-          new Code(),
-          new Italic(),
-          new Link(),
-          new History(),
-        ],
-        content: `
-          <h2>
-            Markdown Shortcuts
-          </h2>
-          <p>
-            Start a new line and type <code>#</code> followed by a <code>space</code> and you will get an H1 headline.
-          </p>
-          <p>
-            This feature is called <strong>input rules</strong>. There are some of these shortcuts for the most basic nodes enabled by default. Try <code>#, ##, ###, …</code> for headlines, <code>></code> for blockquotes, <code>- or +</code> for bullet lists. And of course you can add your own input rules.
-          </p>
-        `,
-      })
-  },*/
   methods: {
     mapClientsToColors(clientID) {
       this.clientsIDs
@@ -188,6 +176,39 @@ export default {
 
       document.getElementsByTagName('head')[0].appendChild(clientsColorsStyle)
     },
+
+    showImagePrompt(command) {
+      const src = prompt('Enter the url of your image here')
+      if (src !== null) {
+        command({ src })
+      }
+    },
+
+    extractText(data) {
+      if (Array.isArray(data)){
+          return data.forEach((arr) => this.extractText(arr));
+      }
+      Object.entries(data).forEach(e => {
+        if (e[0] === 'content') {
+          // console.log(e[1]);
+          this.extractText(e[1]);
+        }
+        else if (e[0] === 'text') {
+          this.pureText += e[1];
+        }
+        // console.log(e);
+      })
+    }, 
+
+    seg () {
+      console.log(this.pureText);
+      this.editor.extensions.extensions.find((e) => e.name === 'collaboration').callGaisSegment(this.pureText)
+    },
+
+    finalTag (ftag) {
+      this.editor.extensions.extensions.find((e) => e.name === 'collaboration').finalTag(ftag)
+    },
+
   },
 
   beforeDestroy() {
