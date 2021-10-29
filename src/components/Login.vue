@@ -107,7 +107,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style>
 .errmsg {
   color:red;
   font-size:15px;
