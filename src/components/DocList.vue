@@ -1,38 +1,74 @@
 <template>
   <div style="text-align:center">
 
-  <ul id="slide-out" class="sidenav">
-    <li>
-      <h3>Tag filter</h3>
-    </li>
-    <li>
-      <div class="divider"></div>
-    </li>
-    <li v-for="tag in tagPool" :key="tag">
-      <label>
-        <input
-          class="filled-in"
-          type="checkbox"
-          :value="tag"
-          v-model="testArray"
-          @change="filter"
-        />
-        <span>{{tag}}</span>
-      </label>
-    </li>
-  </ul>
-    <div>
-      <h1>{{ clientID }}</h1>
-      <button data-target="slide-out" class="btn sidenav-trigger" @click="tagset()">taglist</button>
-    </div>
-    <div v-for="i in (filelist.length / 3)" :key="i.id" class="row">
-      <div class="" v-for="j in 3" :key="j.id">
-        <div class="col s4" v-if="filelist[((i - 1) * 3) + (j - 1)].isShow == true">
-          <div class="docs card blue-grey" @click="getDoc(filelist[((i - 1) * 3) + (j - 1)])">
-            <div class="card-content white-text" v-for="(value, name) in filelist[((i - 1) * 3) + (j - 1)]" :key="value.id">
-              <span class="card-title" v-if="name == 'room'">{{ value }}</span>
-              <div class="card-action" v-if="name == 'tags'">
-                <div v-for="tag in value" class="chip" :key="tag.id">{{ tag }}</div>
+    <ul id="slide-out" class="collapsible sidenav sidenav-fixed side-ul">
+      <li>
+        <div class="row">
+          <div class="col s3">
+            <img src="../assets/user-icon.svg" alt="userImage" style="margin-top:20px;width:50px">
+          </div>
+          <h3 class="col s9">{{ clientID }}</h3>
+        </div>
+      </li>
+      <li>
+        <div class="collapsible-header">
+          <i class="material-icons large icon-demo">add</i>add new file
+        </div>
+      </li>
+      <!-- <li> -->
+      <!--   <h3>Tag filter</h3> -->
+      <!-- </li> -->
+      <!-- <li> -->
+      <!--   <div class="divider"></div> -->
+      <!-- </li> -->
+      <li>
+        <div class="collapsible-header">tag filter</div>
+        <div class="collapsible-body">
+          <ul>
+            <li v-for="tag in tagPool" :key="tag" style="margin-left:20px">
+              <label>
+                <input
+                  class="filled-in"
+                  type="checkbox"
+                  :value="tag"
+                  v-model="testArray"
+                  @change="filter"
+                />
+                <span>{{tag}}</span>
+              </label>
+            </li>
+          </ul>
+        </div>
+      </li>
+      <li class="logout">
+        <div class="collapsible-header">Logout</div>
+      </li>
+    </ul>
+    <div class="main">
+      <div>
+        <h1>FILELIST</h1>
+        <div class="row">
+          <div class="col s2"></div>
+          <div class="input-field col s8">
+            <input id="queryString" type="text" class="validate active" v-model="queryString">
+            <label for="queryString">search</label>
+          </div>
+          <div class="col s1">
+            <button data-target="slide-out" class="btn cyan darken-1" style="margin-top:20px" @click="searchNote()">
+              <i class="material-icons large icon-demo">search</i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div v-for="i in Math.floor((filelist.length + 2) / 3)" :key="i.id" class="row">
+        <div class="" v-for="j in (Math.floor((filelist.length - (i - 1) * 3) / 3) !== 0 ? 3 : (filelist.length - (i - 1) * 3) % 3)" :key="j.id">
+          <div class="col s4" v-if="filelist[((i - 1) * 3) + (j - 1)].isShow == true">
+            <div class="docs card blue-grey" @click="getDoc(filelist[((i - 1) * 3) + (j - 1)])">
+              <div class="card-content white-text" v-for="(value, name) in filelist[((i - 1) * 3) + (j - 1)]" :key="value.id">
+                <span class="card-title" v-if="name == 'room'">{{ value }}</span>
+                <div class="card-action" v-if="name == 'tags'">
+                  <div v-for="tag in value" class="chip" :key="tag.id">{{ tag }}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -43,6 +79,8 @@
 </template>
 
 <script>
+import { Editor } from 'tiptap'
+import { Collaboration } from 'tiptap-extension-collaboration'
 import M from 'materialize-css'
 
 export default {
@@ -52,10 +90,10 @@ export default {
       type: String,
       required: true,
     },
-    
+        
     filelist: {
       type: Array,
-    }
+    },
   },
 
   data () {
@@ -63,16 +101,54 @@ export default {
       tagPool: null,
       tagChoose: null,
       testArray: [],
+      queryString: '',
+      queryHandler: new Editor({
+          extensions: [
+            new Collaboration({
+            socketServerBaseURL: 'http://140.123.101.148:6002',
+            namespace: 'queryHandler',
+            room: 'queryHandler',
+            clientID: this.clientID,
+
+            debounce: 250,
+            keepFocusOnBlur: false,
+
+            onConnected: (state) => {
+                console.log('queryHandler:', state);
+            },
+            onConnectedFailed: (error) => {
+                console.log(error);
+            },
+            onResponse: (res) => {
+                console.log(res);
+                this.$emit('changeDoc', res);
+            },
+            onDisconnected: () => {},
+            onClientsUpdate: () => {},
+            onSaving: () => {},
+            onSaved: () => {},
+            })
+        ] 
+      })
+    }
+  },
+
+  beforeCreate: function () {
+    if (!this.$store.getters.isLogined) {
+      // console.log("Not authenticated yet");
+      this.$router.push('/login');
+    } else {
+      // console.log("Authenticate success");
     }
   },
 
   methods: {
     getDoc (doc) {
-      this.$emit('getDoc', doc.namespace, doc.room);
+      this.$emit('getDoc', doc.namespace, doc.room, doc.id, doc.tags);
     },
 
     log () {
-      console.log(this.filelist);
+      // console.log(this.filelist);
     },
 
     tagset () {
@@ -83,6 +159,7 @@ export default {
         this.tagPool = this.tagPool.union(file.tags);
         file.isShow = true;
       });
+      // console.log(this.tagPool);
     },
 
     filter(){
@@ -97,15 +174,21 @@ export default {
       });
       this.tagPool = newTagPool;
     },
+
+	searchNote() {
+		this.queryHandler.extensions.extensions.find((e) => e.name === 'collaboration').searchNote(this.queryString);
+	},
   },
 
   mounted () {
+    this.filelist = this.$store.getters.getFileList;  
     this.elem = document.querySelectorAll('.sidenav');
     this.instance = M.Sidenav.init(this.elem);
-    /* this.filelist.forEach((file) => {
+    this.elem2 = document.querySelectorAll('.collapsible');
+    this.instance = M.Collapsible.init(this.elem2);
+    this.filelist.forEach((file) => {
         file.isShow = true;
-    });*/
-    this.tagset();
+    });
     console.log(this.filelist);
     Set.prototype.isSuperset = function(subset) {
         for (var elem of subset) {
@@ -116,7 +199,7 @@ export default {
         return true;
     }
 
-    Set.prototype.union = function(setB) {
+    Set.prototype.union = function (setB) {
         var union = new Set(this);
         for (var elem of setB) {
             union.add(elem);
@@ -141,6 +224,7 @@ export default {
         }
         return difference;
     }
+    this.tagset();
 
   },
 }
@@ -162,8 +246,28 @@ export default {
   height:inherit;
 }
 
+.side-ul{
+  padding-inline-start: 0 !important;
+  text-align: left;
+}
+
 ul li {
-  list-style:none;
-  text-align:left;
+  list-style-type: none;
+  border-bottom: 1px solid #ddd;
+}
+
+.user-name {
+  margin-left: 0px;
+}
+
+.main {
+  padding-left: 300px;
+}
+
+.logout {
+  position: absolute;
+  bottom: 60px;
+  width: 300px;
+  border-top: 1px solid #ddd;
 }
 </style>

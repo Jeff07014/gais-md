@@ -1,7 +1,11 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import MainPage from '../views/MainPage.vue'
-//import Login from '../components/Login.vue'
+// import authenticated from '../../middleware/authenticated'
+// import refreshDashboard from '../../middleware/refreshDashboard'
+// import store from '@/store'
+
+// import Login from '../components/Login.vue'
 
 Vue.use(VueRouter)
 
@@ -21,7 +25,7 @@ const routes = [
       },
       {
         path: 'login',
-        name: 'Login',
+        name: 'login',
         component: () => import(/* webpackChunkName: "login" */ '../components/Login.vue')
       },
       {
@@ -40,6 +44,9 @@ const routes = [
   {
     path: '/doclist',
     name: 'Doclist',
+    meta: {
+      requiresAuth: true,
+    },
     component: () => import(/* webpackChunkName: "doclist" */ '../components/DocList.vue'),
     props: true,
   },

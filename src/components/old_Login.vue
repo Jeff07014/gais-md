@@ -1,6 +1,6 @@
 <template>
   <!--transition name="fade"-->
-    <div style="">
+    <div style="background:white;width:100%;height:100%;position:fixed;z-index:1000">
       <div class="col s12" style="padding-top:20px;text-align:center;padding-left:30%;padding-right:30%">
         <img src="../assets/gais-md-v2.png" style="height:200px;width:auto">
         <h1 style="padding-bottom:70px"><b>GAIS Markdown Editor</b></h1>
@@ -20,13 +20,13 @@
               </div>
                 -->
               <div class="input-field col s12" @click="restore">
-                <i class="material-icons prefix">account_circle</i>
-                <input id="account" type="text" :class="{ errbar: (emptyname | loginFailed) , validate: true}" v-model="account" name="account">
+                <i class="material-icons prefix">create</i>
+                <input id="account" placeholder="" type="text" :class="{ errbar: (emptyname | loginFailed) , validate: true}" v-model="account" name="account">
                 <label for="account" :class="{ errfont:emptyname, active: true }">Account</label>
               </div>
               <div class="input-field col s12" @click="restore">
-                <i class="material-icons prefix">lock</i>
-                <input id="password" type="password" :class="{ errbar: (emptyname | loginFailed) , validate: true}" v-model="password" name="password">
+                <i class="material-icons prefix">create</i>
+                <input id="password" placeholder="" type="password" :class="{ errbar: (emptyname | loginFailed) , validate: true}" v-model="password" name="password">
                 <label for="password" :class="{ errfont:emptyname, active: true }">Password</label>
               </div>
             </div>
@@ -39,10 +39,9 @@
               </transition>
             </div>
             <div style="padding:20px">
-              <button class="bg-3e6c94 btn-large waves-effect waves-light" type="submit" @click="login()">Login
+              <button class="indigo btn-large waves-effect waves-light" type="submit" @click="login()">Login
                 <i class="material-icons right">login</i>
               </button>
-              <hr>
             </div>
           </div>
         </div>
@@ -52,7 +51,6 @@
 </template>
 
 <script>
-// import store from '@/store'
 
 export default {
   data (){
@@ -64,14 +62,6 @@ export default {
       password: "",
       emptyname: false,
       loginFailed: false,
-      session: {},
-    }
-  },
-  
-  beforeCreate: function () {
-    console.log(this.$store.getters.isLogined);
-    if (this.$store.getters.isLogined) {
-      this.$router.push('/DocList');
     }
   },
 
@@ -84,26 +74,22 @@ export default {
         this.emptyname = true;
       }
       else {
-        //this.$emit('getID', this.account);
-        //this.insert = false;
-        this.$http.post('http://140.123.101.148:3003/users/Login', { account: this.account, password: this.password })
+        // this.$emit('getID', this.account);
+        // this.insert = false;
+        this.$http.post('http://140.123.101.147:3003/users/Login', { account: this.account, password: this.password })
           .then((data) => {
             if(data.data.message === "Login Success!") {
-              // console.log(data.data.data.fileList);
-              this.$emit('getID', { account: this.account, filelist: data.data.data.fileList, session: data.data.session});
+              console.log(data);
+              this.$emit('getID', { account: this.account, filelist: data.data.data.fileList });
+              // this.$emit('getID', { account: this.account, filelist:  [ {namespace: 'namespace1/project1', room: 'doc1', tags:[]} ]  });
               this.insert = false;
-              this.$store.commit('dataSetting', { 
-                session: data.data.session,
-                filelist: data.data.data.fileList,
-              });
             }
             else {
-              console.log("datas");
               console.log(data.data);
               this.loginFailed = true;
             }
           });
-        //this.$http.get('http://140.123.101.148:3000').then((data) => console.log(data.data));
+        // this.$http.get('http://127.0.0.1:3000').then((data) => console.log(data.data));
         /*this.$http({
           method: 'post',
           url: 'http://localhost:3000/Login',
@@ -157,9 +143,5 @@ export default {
 
 .errfont {
   color: red !important;
-}
-
-.bg-3e6c94 {
-  background-color: #3e6c94 !important;
 }
 </style>

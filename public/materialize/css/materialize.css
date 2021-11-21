@@ -2229,6 +2229,10 @@ pre {
   /* 1 */
   font-size: 1em;
   /* 2 */
+  background-color: black;
+  color: white;
+  padding: 1rem;
+  border-radius:0.5rem;
 }
 
 /* Text-level semantics
@@ -2597,7 +2601,7 @@ textarea {
 }
 
 ul:not(.browser-default) {
-  padding-left: 20px;
+  padding-inline-start: 20px;
   list-style-type: disc;
 }
 
@@ -2687,7 +2691,8 @@ a {
 blockquote {
   margin: 20px 0;
   padding-left: 1.5rem;
-  border-left: 5px solid #ee6e73;
+  border-left: 5px solid #c5c5c5;
+  color: #9c9c9c;
 }
 
 i {
@@ -4446,6 +4451,11 @@ nav .input-field input:focus, nav .input-field input[type=text]:valid, nav .inpu
           box-shadow: none;
 }
 
+/* extend */
+ol:not(.browser-default) {
+  padding-inline-start:20px;
+}
+
 nav .input-field label {
   top: 0;
   left: 0;
@@ -4523,19 +4533,19 @@ h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
 }
 
 h1 {
-  font-size: 4.2rem;
+  font-size: 3rem;
   line-height: 110%;
   margin: 2.8rem 0 1.68rem 0;
 }
 
 h2 {
-  font-size: 3.56rem;
+  font-size: 2.5rem;
   line-height: 110%;
   margin: 2.3733333333rem 0 1.424rem 0;
 }
 
 h3 {
-  font-size: 2.92rem;
+  font-size: 2rem;
   line-height: 110%;
   margin: 1.9466666667rem 0 1.168rem 0;
 }
@@ -4563,7 +4573,7 @@ em {
 }
 
 strong {
-  font-weight: 500;
+  font-weight: 600;
 }
 
 small {

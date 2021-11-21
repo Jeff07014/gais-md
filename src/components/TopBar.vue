@@ -107,6 +107,7 @@ export default {
   methods: {
     logout () {
       this.$emit('finalTag', this.checked);
+      this.$emit('commitIndex');
       this.$router.push({
         name:'Login',
       })

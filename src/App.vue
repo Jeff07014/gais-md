@@ -4,8 +4,12 @@
       <router-view
         @getID="getID"
         @getDoc="getDoc"
+        @changeDoc="changeDoc"
         :namespace="namespace"
+        :elementID="elementID"
         :room="room"
+        :tags="docTags"
+        :session="session"
         :filelist="filelist"
         :clientID="clientID"/>
     </transition>
@@ -13,21 +17,24 @@
 </template>
 
 <script>
+
   export default {
     data () {
       return {
-        //connect: false,
+        // connect: false,
         namespace: "",
         room: "",
         clientID: "",
         filelist: [],
+        session: {},
+        elementID: "",
+        docTags: [], // 建index 的時候用來暫存正在編輯的文件的tag
       }
     },
 
     methods: {
       getID (c) {
         this.setProp(c).then(() => {
-          console.log(this.filelist);
           this.$router.push({
             name: 'Doclist', 
           });
@@ -39,20 +46,28 @@
           setTimeout(() => {
             this.clientID = c.account;
             this.filelist = c.filelist;
+            this.session = c.session;
             resolve();
           });
         })
       },
 
-      getDoc (ns, r) {
+      getDoc (ns, r, eID, tags) {
         this.namespace = ns;
         this.room = r;
-        // console.log(this.namespace, this.room);
+        this.elementID = eID;
+        this.docTags = tags;
+        /*console.log(this.elementID);*/
+        console.log(ns, r, eID, tags);
         this.$global.$connect = true;
         // console.log(this.$global.$connect);
         this.$router.push({
           name: 'Editor',
         });
+      },
+
+      changeDoc(doc) {
+            this.filelist = doc;
       },
 
     }
