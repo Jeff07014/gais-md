@@ -41,7 +41,7 @@
               </div>
             </div>
             <div class="modal-footer">
-              <a href="#" class="modal-close waves-effect waves-green btn-flat" @click="logout()">exit</a>
+              <a href="" class="modal-close waves-effect waves-green btn-flat" @click="logout()">exit</a>
             </div>
           </div>
           <p class="btn-floating right center cyan lighten-1 p-10">{{ IDs.length }}</p>
@@ -106,11 +106,11 @@ export default {
 
   methods: {
     logout () {
+      this.$http.post('http://127.0.0.1:3003/users/logout', { account: this.account, password: this.password });
+      this.$store.commit('dataRemoving');
       this.$emit('finalTag', this.checked);
       this.$emit('commitIndex');
-      this.$router.push({
-        name:'Login',
-      })
+      this.$router.push('/home')
         .then(() => {
           setTimeout(() => {
             this.$global.$connect = false;

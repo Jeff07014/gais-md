@@ -12,6 +12,7 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
+    redirect: '/home',
     name: 'MainPage',
     component: MainPage,
     children:[
@@ -25,7 +26,7 @@ const routes = [
       },
       {
         path: 'login',
-        name: 'login',
+        name: 'Login',
         component: () => import(/* webpackChunkName: "login" */ '../components/Login.vue')
       },
       {
@@ -53,6 +54,7 @@ const routes = [
 ]
 
 const router = new VueRouter({
+  mode: 'history',
   routes
 })
 

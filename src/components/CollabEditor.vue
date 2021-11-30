@@ -286,7 +286,7 @@ export default {
           new Strike(),
           new Underline(),
           new Collaboration({
-            socketServerBaseURL: 'http://140.123.101.148:6002',
+            socketServerBaseURL: 'http://127.0.0.1:6002',
             namespace: this.namespace,
             room: this.room,
             clientID: this.clientID,
@@ -436,18 +436,18 @@ export default {
 
 <style scoped>
   .mdpanel {
-    margin-left:15%;
-    margin-right:15%;
-    margin-top:30px;
+    margin-left:20%;
+    margin-right:20%;
+    margin-top:94px;
     padding: 20px;
     border-radius:10px;
-    height:770px;
+    height:85%;
     min-width:850px;
     margin-bottom:500px;
   }
 
   .text {
-    height: 680px;
+    height: 90%;
     overflow-y: scroll;
     overflow-x: hidden;
     word-break: break-word;

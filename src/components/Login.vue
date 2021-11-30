@@ -1,7 +1,7 @@
 <template>
   <!--transition name="fade"-->
     <div style="">
-      <div class="col s12" style="padding-top:20px;text-align:center;padding-left:30%;padding-right:30%">
+      <div class="col s12 login" style="">
         <img src="../assets/gais-md-v2.png" style="height:200px;width:auto">
         <h1 style="padding-bottom:70px"><b>GAIS Markdown Editor</b></h1>
         <div class="row">
@@ -38,11 +38,16 @@
                 </div>
               </transition>
             </div>
-            <div style="padding:20px">
-              <button class="bg-3e6c94 btn-large waves-effect waves-light" type="submit" @click="login()">Login
-                <i class="material-icons right">login</i>
-              </button>
-              <hr>
+            <div style="padding:20px" class="row">
+              <div class="col s6">
+                <button class="bg-3e6c94 btn-large waves-effect waves-light" type="submit" @click="login()">Login
+                  <i class="material-icons right">login</i>
+                </button>
+              </div>
+              <div class="col s6">
+                <button class="bg-3e6c94 btn-large waves-effect waves-light" type="submit" @click="google()">Google
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -86,7 +91,7 @@ export default {
       else {
         //this.$emit('getID', this.account);
         //this.insert = false;
-        this.$http.post('http://140.123.101.148:3003/users/Login', { account: this.account, password: this.password })
+        this.$http.post('http://127.0.0.1:3003/users/Login', { account: this.account, password: this.password })
           .then((data) => {
             if(data.data.message === "Login Success!") {
               // console.log(data.data.data.fileList);
@@ -112,6 +117,29 @@ export default {
           },
         });*/
       }
+
+    },
+
+    google() {
+    /*  this.$http.get('http://localhost:3003/users/OAuth2')
+        .then((data) => {
+          console.log(data.data);
+        });*/
+      this.$gAuth.signIn()
+        .then(authCode => {
+          // console.log(authCode.getAuthResponse().id_token);
+          console.log(authCode.wc);
+          this.$http.post('http://localhost:3003/users/OAuth2/login', { token: authCode.wc.id_token})
+            .then(res => {
+              this.$emit('getID', { account: res.data.data.account, filelist: res.data.data.fileList, session: res.data.session});
+              this.$store.commit('dataSetting2', { 
+                session: res.data.session,
+                filelist: res.data.data.fileList,
+              });
+            });
+        //on success
+        //return this.$http.post('http://your-backend-server.com/auth/google', { code: authCode, redirect_uri: 'postmessage' })
+      });
     },
 
     restore () {
@@ -123,6 +151,14 @@ export default {
 </script>
 
 <style>
+.login {
+  padding-top:20px;
+  text-align:center;
+  margin-left:auto;
+  margin-right:auto;
+  width: 600px;
+}
+
 .errmsg {
   color:red;
   font-size:15px;

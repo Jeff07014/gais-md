@@ -14,6 +14,7 @@
         <div class="collapsible-header">
           <i class="material-icons large icon-demo">add</i>add new file
         </div>
+        <div class="collapsible-body"></div>
       </li>
       <!-- <li> -->
       <!--   <h3>Tag filter</h3> -->
@@ -22,7 +23,7 @@
       <!--   <div class="divider"></div> -->
       <!-- </li> -->
       <li>
-        <div class="collapsible-header">tag filter</div>
+        <div id="tag" class="collapsible-header">tag filter</div>
         <div class="collapsible-body">
           <ul>
             <li v-for="tag in tagPool" :key="tag" style="margin-left:20px">
@@ -41,7 +42,8 @@
         </div>
       </li>
       <li class="logout">
-        <div class="collapsible-header">Logout</div>
+        <div class="collapsible-header" @click="logout()">Logout</div>
+        <div class="collapsible-body"></div>
       </li>
     </ul>
     <div class="main">
@@ -105,7 +107,7 @@ export default {
       queryHandler: new Editor({
           extensions: [
             new Collaboration({
-            socketServerBaseURL: 'http://140.123.101.148:6002',
+            socketServerBaseURL: 'http://127.0.0.1:6002',
             namespace: 'queryHandler',
             room: 'queryHandler',
             clientID: this.clientID,
@@ -143,15 +145,15 @@ export default {
   },
 
   methods: {
-    getDoc (doc) {
+    getDoc(doc) {
       this.$emit('getDoc', doc.namespace, doc.room, doc.id, doc.tags);
     },
 
-    log () {
+    log() {
       // console.log(this.filelist);
     },
 
-    tagset () {
+    tagset() {
       this.tagPool = new Set();
       this.tagChoose = new Set();
 
@@ -176,8 +178,21 @@ export default {
     },
 
 	searchNote() {
-		this.queryHandler.extensions.extensions.find((e) => e.name === 'collaboration').searchNote(this.queryString);
+      this.queryHandler.extensions.extensions.find((e) => e.name === 'collaboration').searchNote(this.queryString);
 	},
+
+    logout() {
+      this.$http.post('http://127.0.0.1:3003/users/logout', { account: this.account, password: this.password });
+      this.$store.commit('dataRemoving');
+      this.$gAuth.signOut();
+      this.$router.push('/home')
+        .then(() => {
+          setTimeout(() => {
+            this.$global.$connect = false;
+            // console.log(this.$global.$connect);
+          }, 1000)
+        });
+    }
   },
 
   mounted () {

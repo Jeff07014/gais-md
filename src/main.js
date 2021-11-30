@@ -4,6 +4,7 @@ import App from './App.vue'
 import router from './router'
 import Global from './components/Global.vue'
 import axios from 'axios'
+import GAuth from 'vue-google-oauth2'
 
 import createPersistedState from 'vuex-persistedstate'
 import * as Cookies from 'js-cookie'
@@ -12,6 +13,8 @@ Vue.use(Vuex)
 Vue.config.productionTip = false
 Vue.prototype.$global = Global
 Vue.prototype.$http = axios
+Vue.use(GAuth, {clientId: '417578352473-90ueqki5ddsok1747ukrvog34sbbg28g.apps.googleusercontent.com', scope: 'profile email'})
+
 
 /*
 Session {
@@ -58,6 +61,16 @@ const store = new Vuex.Store({
       state.filelist = payload.filelist;
       state.isLogin = ( payload.session.passport != null )
     },
+    dataSetting2 (state, payload) {
+      state.Session = payload.session;
+      state.filelist = payload.filelist;
+      state.isLogin = true;
+    },
+    dataRemoving (state) {
+      state.Session = null;
+      state.filelist = null;
+      state.isLogin = false;
+    }
   },
 
   plugins : [
