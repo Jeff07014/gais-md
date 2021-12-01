@@ -7,11 +7,11 @@
           <div class="col s3">
             <img src="../assets/user-icon.svg" alt="userImage" style="margin-top:20px;width:50px">
           </div>
-          <h3 class="col s9">{{ clientID }}</h3>
+          <h3 class="col s9">{{ clientId }}</h3>
         </div>
       </li>
       <li>
-        <div class="collapsible-header">
+        <div class="collapsible-header" @click="addFile()">
           <i class="material-icons large icon-demo">add</i>add new file
         </div>
         <div class="collapsible-body"></div>
@@ -100,6 +100,7 @@ export default {
 
   data () {
     return {
+      clientId: this.clientID,
       tagPool: null,
       tagChoose: null,
       testArray: [],
@@ -110,7 +111,7 @@ export default {
             socketServerBaseURL: 'http://127.0.0.1:6002',
             namespace: 'queryHandler',
             room: 'queryHandler',
-            clientID: this.clientID,
+            clientID: this.clientId,
 
             debounce: 250,
             keepFocusOnBlur: false,
@@ -140,7 +141,7 @@ export default {
       // console.log("Not authenticated yet");
       this.$router.push('/login');
     } else {
-      // console.log("Authenticate success");
+      console.log("id:", this.clientId);
     }
   },
 
@@ -192,10 +193,18 @@ export default {
             // console.log(this.$global.$connect);
           }, 1000)
         });
-    }
+    },
+
+    addFile() {
+      this.$http.post('http://127.0.0.1:3003/query', { cmd: 'addFile', account: this.clientID })
+        .then(res => {
+          console.log(res);
+        });
+    },
   },
 
   mounted () {
+    this.clientId = this.$store.getters.getClientID;
     this.filelist = this.$store.getters.getFileList;  
     this.elem = document.querySelectorAll('.sidenav');
     this.instance = M.Sidenav.init(this.elem);

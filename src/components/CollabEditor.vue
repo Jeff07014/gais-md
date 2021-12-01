@@ -164,7 +164,7 @@
 
           </div>
         </editor-menu-bar>
-        <div class="text">
+        <div class="text" id="mainArea">
           <EditorContent class="editor__content" :editor="editor"  />
         </div>
       </template>
@@ -374,7 +374,6 @@ export default {
             var pageData = canvas.toDataURL('image/jpeg', 1.0);
             var pdf = new jsPDF('', 'pt', 'a4');
             pdf.addImage(pageData, 'JPEG', 0, 0, 595.28, 592.28/canvas.width * canvas.height );
-            /*pdf.addImage(pageData, 'JPEG', 10, 10);*/
             pdf.save('stone.pdf');
         });
     },

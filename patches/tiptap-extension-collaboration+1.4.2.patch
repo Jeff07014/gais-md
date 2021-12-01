@@ -1,0 +1,281 @@
+diff --git a/node_modules/tiptap-extension-collaboration/lib/Collaboration.js b/node_modules/tiptap-extension-collaboration/lib/Collaboration.js
+index c3279b1..41f9eed 100644
+--- a/node_modules/tiptap-extension-collaboration/lib/Collaboration.js
++++ b/node_modules/tiptap-extension-collaboration/lib/Collaboration.js
+@@ -1,5 +1,7 @@
+ "use strict";
+ 
++function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
++
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+@@ -13,9 +15,15 @@ var _prosemirrorCollab = require("prosemirror-collab");
+ 
+ var _socket = _interopRequireDefault(require("socket.io-client"));
+ 
++var _util = _interopRequireDefault(require("util"));
++
+ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+ 
+-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
++function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
++
++function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
++
++function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+ 
+ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+ 
+@@ -33,10 +41,12 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
+ 
+ function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+ 
+-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
++function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+ 
+ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+ 
++// import { PluginKey } from 'prosemirror-state'; // test
++// const k = new PluginKey("collab"); // test
+ var Collaboration = /*#__PURE__*/function (_Extension) {
+   _inherits(Collaboration, _Extension);
+ 
+@@ -49,6 +59,33 @@ var Collaboration = /*#__PURE__*/function (_Extension) {
+   }
+ 
+   _createClass(Collaboration, [{
++    key: "name",
++    get: function get() {
++      return 'collaboration';
++    }
++  }, {
++    key: "defaultOptions",
++    get: function get() {
++      return {
++        socketServerBaseURL: 'http://localhost:6000',
++        namespace: '',
++        room: '',
++        elementID: '',
++        clientID: String(Math.floor(Math.random() * 0xFFFFFFFF)),
++        joinOptions: {},
++        debounce: 250,
++        keepFocusOnBlur: false,
++        onConnected: function onConnected() {},
++        onConnectionRefused: function onConnectionRefused() {},
++        onDisconnected: function onDisconnected() {},
++        onClientsUpdate: function onClientsUpdate() {},
++        onSaving: function onSaving() {},
++        onSaveFailed: function onSaveFailed() {},
++        onSaved: function onSaved() {},
++        onResponse: function onResponse() {}
++      };
++    }
++  }, {
+     key: "init",
+     value: function init() {
+       var _this = this;
+@@ -57,7 +94,7 @@ var Collaboration = /*#__PURE__*/function (_Extension) {
+       this.version = 0;
+       this.initDone = false;
+       this.getSendableSteps = this.debounce(function (state) {
+-        var sendable = (0, _prosemirrorCollab.sendableSteps)(state);
++        var sendable = (0, _prosemirrorCollab.sendableSteps)(state); // console.log(state);
+ 
+         if (sendable) {
+           _this.version = sendable.version;
+@@ -69,7 +106,8 @@ var Collaboration = /*#__PURE__*/function (_Extension) {
+             steps: sendable.steps.map(function (step) {
+               return step.toJSON();
+             })
+-          });
++          }, _util["default"].inspect(_objectSpread({}, state.config), false, null, true)); // test
++
+         }
+       }, this.options.debounce);
+       this.getSendableSelection = this.debounce(function (state) {
+@@ -99,6 +137,7 @@ var Collaboration = /*#__PURE__*/function (_Extension) {
+         _this.socket.emit('join', {
+           roomName: _this.options.room,
+           clientID: _this.options.clientID,
++          elementID: _this.options.elementID,
+           options: _this.options.joinOptions
+         });
+       }).on('init', function (data) {
+@@ -113,7 +152,7 @@ var Collaboration = /*#__PURE__*/function (_Extension) {
+ 
+         _this.initDone = true;
+ 
+-        _this.options.onConnected();
++        _this.options.onConnected(_this.editor.state);
+       }).on('initFailed', function (error) {
+         _this.options.onConnectionRefused(error);
+       }).on('update', function (data) {
+@@ -131,6 +170,9 @@ var Collaboration = /*#__PURE__*/function (_Extension) {
+           clientsIDs: clientsIDs,
+           clientID: _this.options.clientID
+         });
++      }).on('res', function (res) {
++        // console.log(res);
++        _this.options.onResponse(res);
+       }).on('disconnect', function () {
+         _this.options.onDisconnected();
+       });
+@@ -168,6 +210,40 @@ var Collaboration = /*#__PURE__*/function (_Extension) {
+     value: function closeSocket() {
+       this.socket.close();
+     }
++  }, {
++    key: "callGaisSegment",
++    value: function callGaisSegment(data) {
++      this.socket.emit('segment', data);
++    }
++  }, {
++    key: "finalTag",
++    value: function finalTag(ftag) {
++      this.socket.emit('updateTag', {
++        clientID: this.options.clientID,
++        tag: ftag
++      });
++    }
++  }, {
++    key: "searchNote",
++    value: function searchNote(queryString) {
++      this.socket.emit('search', {
++        clientID: this.options.clientID,
++        query: queryString
++      });
++    }
++  }, {
++    key: "updateIndex",
++    value: function updateIndex(data) {
++      this.socket.emit('updateIndex', {
++        clientID: this.options.clientID,
++        string: data
++      });
++    }
++  }, {
++    key: "commitIndex",
++    value: function commitIndex() {
++      this.socket.emit('commitIndex');
++    }
+   }, {
+     key: "debounce",
+     value: function debounce(fn, delay) {
+@@ -187,31 +263,6 @@ var Collaboration = /*#__PURE__*/function (_Extension) {
+         }, delay);
+       };
+     }
+-  }, {
+-    key: "name",
+-    get: function get() {
+-      return 'collaboration';
+-    }
+-  }, {
+-    key: "defaultOptions",
+-    get: function get() {
+-      return {
+-        socketServerBaseURL: 'http://localhost:6000',
+-        namespace: '',
+-        room: '',
+-        clientID: String(Math.floor(Math.random() * 0xFFFFFFFF)),
+-        joinOptions: {},
+-        debounce: 250,
+-        keepFocusOnBlur: false,
+-        onConnected: function onConnected() {},
+-        onConnectionRefused: function onConnectionRefused() {},
+-        onDisconnected: function onDisconnected() {},
+-        onClientsUpdate: function onClientsUpdate() {},
+-        onSaving: function onSaving() {},
+-        onSaveFailed: function onSaveFailed() {},
+-        onSaved: function onSaved() {}
+-      };
+-    }
+   }]);
+ 
+   return Collaboration;
+diff --git a/node_modules/tiptap-extension-collaboration/lib/Cursors.js b/node_modules/tiptap-extension-collaboration/lib/Cursors.js
+index b8dd801..284ca11 100644
+--- a/node_modules/tiptap-extension-collaboration/lib/Cursors.js
++++ b/node_modules/tiptap-extension-collaboration/lib/Cursors.js
+@@ -1,5 +1,7 @@
+ "use strict";
+ 
++function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
++
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+@@ -9,8 +11,6 @@ var _tiptap = require("tiptap");
+ 
+ var _prosemirrorView = require("prosemirror-view");
+ 
+-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+-
+ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+ 
+ function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+@@ -27,7 +27,7 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
+ 
+ function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+ 
+-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
++function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+ 
+ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+ 
+@@ -43,6 +43,16 @@ var Cursors = /*#__PURE__*/function (_Extension) {
+   }
+ 
+   _createClass(Cursors, [{
++    key: "name",
++    get: function get() {
++      return 'cursors';
++    }
++  }, {
++    key: "defaultOptions",
++    get: function get() {
++      return {};
++    }
++  }, {
+     key: "getDecorations",
+     value: function getDecorations(_ref) {
+       var doc = _ref.doc,
+@@ -73,23 +83,6 @@ var Cursors = /*#__PURE__*/function (_Extension) {
+       }).flat();
+       return _prosemirrorView.DecorationSet.create(doc, decorations);
+     }
+-  }, {
+-    key: "update",
+-    value: function update(selections) {
+-      var tr = this.editor.state.tr;
+-      var transaction = tr.setMeta('selections', selections).setMeta('addToHistory', false);
+-      this.editor.view.dispatch(transaction);
+-    }
+-  }, {
+-    key: "name",
+-    get: function get() {
+-      return 'cursors';
+-    }
+-  }, {
+-    key: "defaultOptions",
+-    get: function get() {
+-      return {};
+-    }
+   }, {
+     key: "plugins",
+     get: function get() {
+@@ -126,6 +119,13 @@ var Cursors = /*#__PURE__*/function (_Extension) {
+         }
+       })];
+     }
++  }, {
++    key: "update",
++    value: function update(selections) {
++      var tr = this.editor.state.tr;
++      var transaction = tr.setMeta('selections', selections).setMeta('addToHistory', false);
++      this.editor.view.dispatch(transaction);
++    }
+   }]);
+ 
+   return Cursors;

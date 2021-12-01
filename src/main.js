@@ -31,7 +31,7 @@ const store = new Vuex.Store({
   state: {
     Session:{
       cookie: {
-        path: { type: String},
+        path: { type: String },
         _expires: { type: String },
         originalMaxAge: { type: Number },
         httpOnly: { type: Boolean },
@@ -40,6 +40,7 @@ const store = new Vuex.Store({
     },
     filelist: [],
     isLogin: false,
+    clientID: { type: String },
   },
   
 
@@ -50,7 +51,10 @@ const store = new Vuex.Store({
     },
     getFileList: state => {
       return state.filelist
-    }
+    },
+    getClientID: state => {
+      return state.clientID
+    },
   },
 
   // for Update Data state
@@ -64,6 +68,7 @@ const store = new Vuex.Store({
     dataSetting2 (state, payload) {
       state.Session = payload.session;
       state.filelist = payload.filelist;
+      state.clientID = payload.clientID;
       state.isLogin = true;
     },
     dataRemoving (state) {

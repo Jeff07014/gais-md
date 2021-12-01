@@ -49,6 +49,11 @@
                 </button>
               </div>
             </div>
+            <div>
+              <p>Don't have an account?
+                <a href="" >Sign up</a>
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -100,6 +105,7 @@ export default {
               this.$store.commit('dataSetting', { 
                 session: data.data.session,
                 filelist: data.data.data.fileList,
+                clientID: this.account,
               });
             }
             else {
@@ -132,9 +138,11 @@ export default {
           this.$http.post('http://localhost:3003/users/OAuth2/login', { token: authCode.wc.id_token})
             .then(res => {
               this.$emit('getID', { account: res.data.data.account, filelist: res.data.data.fileList, session: res.data.session});
+              console.log(res.data.data);
               this.$store.commit('dataSetting2', { 
                 session: res.data.session,
                 filelist: res.data.data.fileList,
+                clientID: res.data.data.account,
               });
             });
         //on success
