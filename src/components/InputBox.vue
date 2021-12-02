@@ -38,9 +38,9 @@ checked: []
     },
     methods: {
       keyword() {
-        this.$http.get('http://gaisdb.ccu.edu.tw:5721/api/segment?content='+this.message).then((response) => {
-            this.types=response.data.Keyterms.split(',');
-        });
+        //    this.$http.get('http://gaisdb.ccu.edu.tw:5721/api/segment?content='+this.message).then((response) => {
+        //      this.types=response.data.Keyterms.split(',');
+        //    });
       },
       clean(){
 this.types=[];

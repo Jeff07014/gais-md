@@ -1,63 +1,75 @@
 <template>
-  <nav>
-    <div class="nav-wrapper blue-grey lighten-2">
-      <ul id="nav-mobile" class="left hide-on-med-and-down row">
-<!--
-        <li><a><i class="material-icons">title</i></a></li>
-        <li><a><i class="material-icons">format_bold</i></a></li>
-        <li><a><i class="material-icons">format_italic</i></a></li>
-        <div class="clientsIDs">
-          &bull; {{ IDs.length }} {{ IDs.length === 1 ? 'user' : 'users' }} connected to {{ namespace }}/{{ room }}
-        </div>
--->
-        <li class="col s2"><a href="#" class="logo left">GAIS-MD</a></li>
-        <li class="col s1 ids">
-        <!--
-          <div class="indigo lighten-1 clientnum z-depth-1">
-            <div class="flex">
-              <i class="material-icons" style="line-height:inherit;margin-right:20px">people_outline</i>{{ IDs.length }}
-            </div>
+  <div>
+    <div id="modal1" class="modal modal-fixed-footer">
+      <div class="modal-content">
+        <h4>Tag choosing</h4>
+        <div class="row" style="height:60%">
+          <div id="chooseboxes" v-for="(tag, index) in Tags" :key="index" class="col s3">
+            <label>
+              <input type="checkbox" :id="index" :value="tag" v-model="checked">
+              <span>{{ tag }}</span>
+            </label>
           </div>
-        -->
-        </li>
-        <li class="col s5"></li>
-        <!--
-        <li class="col s5"><div class="filepath">File path: {{ namespace }}/{{ room }}</div></li>
-        <li class="col s2">
-        </li>
-        -->
-        <li class="col s4">
-          <a href="#modal1" class="right f-20 modal-trigger" @click="seg()">Logout</a>
-          <div id="modal1" class="modal modal-fixed-footer">
-            <div class="modal-content">
-              <h4 class="black-text">Tag choosing</h4>
-              <div class="row">
-                <div id="chooseboxes" v-for="(tag, index) in tags" :key="index" class="col s3">
-                  <label>
-                    <input type="checkbox" :id="index" :value="tag" v-model="checked">
-                    <span>{{ tag }}</span>
-                  </label>
-                </div>
+        </div>
+        <h4 class="">Add Tags</h4>
+        <div class="row" style="height:10%">
+          <div class="input-field col s10">
+            <input type="text" id="tag" class="validate active" v-model="newTag">
+            <label for="tag">tag</label>
+          </div>
+          <div class="col s2" style="padding:20px 0px">
+            <button class="btn right" @click="addTag()">add</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-close waves-effect waves-green btn-flat" @click="logout()">exit</button>
+      </div>
+    </div>
+    <nav>
+      <div class="nav-wrapper blue-grey lighten-2">
+        <ul id="nav-mobile" class="left hide-on-med-and-down row">
+<!--
+          <li><a><i class="material-icons">title</i></a></li>
+          <li><a><i class="material-icons">format_bold</i></a></li>
+          <li><a><i class="material-icons">format_italic</i></a></li>
+          <div class="clientsIDs">
+            &bull; {{ IDs.length }} {{ IDs.length === 1 ? 'user' : 'users' }} connected to {{ namespace }}/{{ room }}
+          </div>
+-->
+          <li class="col s2"><a href="#" class="logo left">GAIS-MD</a></li>
+          <li class="col s1 ids">
+          <!--
+            <div class="indigo lighten-1 clientnum z-depth-1">
+              <div class="flex">
+                <i class="material-icons" style="line-height:inherit;margin-right:20px">people_outline</i>{{ IDs.length }}
               </div>
             </div>
-            <div class="modal-footer">
-              <a href="" class="modal-close waves-effect waves-green btn-flat" @click="logout()">exit</a>
+          -->
+          </li>
+          <li class="col s5"></li>
+          <!--
+          <li class="col s5"><div class="filepath">File path: {{ namespace }}/{{ room }}</div></li>
+          <li class="col s2">
+          </li>
+          -->
+          <li class="col s4">
+            <a href="#modal1" class="right f-20 modal-trigger" @click="seg()">Logout</a>
+            <p class="btn-floating right center cyan lighten-1 p-10">{{ IDs.length }}</p>
+            <i class="right material-icons" style="line-height:inherit;margin-right:20px">people_outline</i>
+            <div class="right p-20">
+              <a v-if="saving" class="save amber accent-3 z-depth-1 black-text">
+                Saving...
+              </a>
+              <a v-else class="save z-depth-1 teal lighten-1">
+                Saved
+              </a>
             </div>
-          </div>
-          <p class="btn-floating right center cyan lighten-1 p-10">{{ IDs.length }}</p>
-          <i class="right material-icons" style="line-height:inherit;margin-right:20px">people_outline</i>
-          <div class="right p-20">
-            <a v-if="saving" class="save amber accent-3 z-depth-1 black-text">
-              Saving...
-            </a>
-            <a v-else class="save z-depth-1 teal lighten-1">
-              Saved
-            </a>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </nav>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </div>
 </template>
 
 <script>
@@ -71,6 +83,8 @@ export default {
       elems: '',
       instances: '',
       checked: [],
+      Tags: this.tags,
+      newTag: '',
     }
   },
 
@@ -108,15 +122,19 @@ export default {
     logout () {
       this.$http.post('http://127.0.0.1:3003/users/logout', { account: this.account, password: this.password });
       this.$store.commit('dataRemoving');
-      this.$emit('finalTag', this.checked);
+      // this.$emit('finalTag', this.checked);
       this.$emit('commitIndex');
       this.$router.push('/home')
         .then(() => {
-          setTimeout(() => {
+      /*    setTimeout(() => {
             this.$global.$connect = false;
             // console.log(this.$global.$connect);
-          }, 1000)
+          }, 1000)*/
+        })
+        .catch((err) =>{
+          console.log(err);
         });
+
       //this.$global.$connect = false;
       //console.log(this.$global.$connect);
     },
@@ -127,7 +145,11 @@ export default {
 
     finalTag() {
       this.$emit('finalTag', this.checked);
-    }
+    },
+
+    addTag() {
+        this.Tags.push(this.newTag);
+    },
   }
 }
 </script>

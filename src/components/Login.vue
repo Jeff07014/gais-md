@@ -39,21 +39,53 @@
               </transition>
             </div>
             <div style="padding:20px" class="row">
-              <div class="col s6">
+              <div class="col s4"></div>
+              <div class="col s4">
                 <button class="bg-3e6c94 btn-large waves-effect waves-light" type="submit" @click="login()">Login
                   <i class="material-icons right">login</i>
                 </button>
               </div>
-              <div class="col s6">
-                <button class="bg-3e6c94 btn-large waves-effect waves-light" type="submit" @click="google()">Google
-                </button>
+              <div class="col s1">
+                <p>Or</p>
+              </div>
+              <div class="col s2">
+                <!-- <button class="bg-3e6c94 btn-large waves-effect waves-light" type="submit" @click="google()"> -->
+                  <img class="btn btn-large waves-effect waves-light white" style="padding:5px" src="../assets/google.svg" alt="loading..." @click="google()">
+                <!-- </button> -->
               </div>
             </div>
             <div>
               <p>Don't have an account?
-                <a href="" >Sign up</a>
+                <a class="modal-trigger" style="cursor:pointer" data-target="signUp">Sign up</a>
               </p>
             </div>
+
+            <div id="signUp" class="modal signUpModal">
+              <div class="modal-content" style="height:90%">
+                <h1 style="margin-top:60px">Create an Account</h1>
+                <div class="acpw">
+                  <div class="input-field col s12" @click="restore">
+                    <i class="material-icons prefix">account_circle</i>
+                    <input id="newAccount" type="text" :class="{ errbar: (emptyname | loginFailed) , validate: true}" v-model="newAccount" name="account">
+                    <label for="newAccount" :class="{ errfont:emptyname, active: true }">Enter an Account</label>
+                  </div>
+                  <div class="input-field col s12" @click="restore">
+                    <i class="material-icons prefix">lock</i>
+                    <input id="newPassword" type="password" :class="{ errbar: (emptyname | loginFailed) , validate: true}" v-model="newPassword" name="password">
+                    <label for="newPassword" :class="{ errfont:emptyname, active: true }">Enter a Password</label>
+                  </div>
+                  <!-- <div class="input-field col s12" @click="restore"> -->
+                  <!--   <i class="material-icons prefix">lock</i> -->
+                  <!--   <input id="password" type="password" :class="{ errbar: (emptyname | loginFailed) , validate: true}" v-model="password" name="password"> -->
+                  <!--   <label for="password" :class="{ errfont:emptyname, active: true }">Enter a Password again</label> -->
+                  <!-- </div> -->
+                </div>
+              </div>
+              <div class="modal-footer" style="height:10%">
+                <button class="modal-close waves-effect waves-green btn-flat" @click="create">create</button>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -63,6 +95,7 @@
 
 <script>
 // import store from '@/store'
+import M from 'materialize-css'
 
 export default {
   data (){
@@ -72,6 +105,8 @@ export default {
       //room: "doc1",
       account: "",
       password: "",
+      newAccount: "",
+      newPassword: "",
       emptyname: false,
       loginFailed: false,
       session: {},
@@ -83,6 +118,11 @@ export default {
     if (this.$store.getters.isLogined) {
       this.$router.push('/DocList');
     }
+  },
+
+  mounted () {
+    this.elem = document.querySelectorAll('.modal');
+    this.instance = M.Modal.init(this.elem);
   },
 
   methods: {
@@ -153,7 +193,11 @@ export default {
     restore () {
       this.emptyname = false;
       this.loginFailed = false;
-    }
+    },
+
+    create() {
+      this.$http.post('http://localhost:3003/users/SignUp', { account: this.newAccount, password: this.newPassword });
+    },
   },
 }
 </script>
@@ -164,6 +208,15 @@ export default {
   text-align:center;
   margin-left:auto;
   margin-right:auto;
+  width: 600px;
+}
+
+.acpw {
+  margin-top: 150px;
+}
+
+.signUpModal {
+  height: 700px;
   width: 600px;
 }
 

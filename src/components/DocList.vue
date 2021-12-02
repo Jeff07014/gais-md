@@ -11,17 +11,12 @@
         </div>
       </li>
       <li>
-        <div class="collapsible-header" @click="addFile()">
+        <div class="collapsible-header modal-trigger" data-target="fileName">
+        <!-- <div class="collapsible-header modal-trigger" href="#fileName" @click="addFile()"> -->
           <i class="material-icons large icon-demo">add</i>add new file
         </div>
         <div class="collapsible-body"></div>
       </li>
-      <!-- <li> -->
-      <!--   <h3>Tag filter</h3> -->
-      <!-- </li> -->
-      <!-- <li> -->
-      <!--   <div class="divider"></div> -->
-      <!-- </li> -->
       <li>
         <div id="tag" class="collapsible-header">tag filter</div>
         <div class="collapsible-body">
@@ -46,6 +41,39 @@
         <div class="collapsible-body"></div>
       </li>
     </ul>
+
+    <div id="fileName" class="modal">
+      <div class="modal-content">
+        <h4>Create New File</h4>
+        <div class="row">
+          <div class="input-field">
+            <input id="newFileName" type="text" class="validate active" v-model="newFileName">
+            <label for="newFileName">name</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <!-- <button class="modal-close waves-effect waves-green btn-flat" @click="addFile()" >done</button> -->
+        <button class="modal-close waves-effect waves-green btn-flat" @click="addFile()" >done</button>
+      </div>
+    </div>
+
+    <div id="userName" class="modal">
+      <div class="modal-content">
+        <h4>Add User</h4>
+        <div class="row">
+          <div class="input-field">
+            <input id="newUser" type="text" class="validate active" v-model="newUser">
+            <label for="newUser">name</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <!-- <button class="modal-close waves-effect waves-green btn-flat" @click="addFile()" >done</button> -->
+        <button class="modal-close waves-effect waves-green btn-flat" @click="addUser()" >done</button>
+      </div>
+    </div>
+
     <div class="main">
       <div>
         <h1>FILELIST</h1>
@@ -65,13 +93,23 @@
       <div v-for="i in Math.floor((filelist.length + 2) / 3)" :key="i.id" class="row">
         <div class="" v-for="j in (Math.floor((filelist.length - (i - 1) * 3) / 3) !== 0 ? 3 : (filelist.length - (i - 1) * 3) % 3)" :key="j.id">
           <div class="col s4" v-if="filelist[((i - 1) * 3) + (j - 1)].isShow == true">
-            <div class="docs card blue-grey" @click="getDoc(filelist[((i - 1) * 3) + (j - 1)])">
-              <div class="card-content white-text" v-for="(value, name) in filelist[((i - 1) * 3) + (j - 1)]" :key="value.id">
-                <span class="card-title" v-if="name == 'room'">{{ value }}</span>
-                <div class="card-action" v-if="name == 'tags'">
-                  <div v-for="tag in value" class="chip" :key="tag.id">{{ tag }}</div>
+            <div class="docs card blue-grey" style="padding:0 20px 0 20px">
+              <div class="card-content white-text">
+                <div class="close cur-pointer" @click="deleteFile(filelist[((i - 1) * 3) + (j - 1)], ((i - 1) * 3) + (j - 1))">
+                  <i class="material-icons small icon-demo">close</i>
+                </div>
+                <span style="font-size:2.5rem" class="card-title large" @click="getDoc(filelist[((i - 1) * 3) + (j - 1)])">{{ filelist[((i - 1) * 3) + (j - 1)].room }}</span>
+                <div class="card-action" style="padding:0;height:30%">
+                  <div>
+                    <div v-for="tag in filelist[((i - 1) * 3) + (j - 1)].tags" class="chip" :key="tag.id">{{ tag }}</div>
+                  </div>
+                </div>
+                <div class="card-action btn" style="padding:0;height:10%">
                 </div>
               </div>
+            </div>
+            <div class="addUser btn blue-grey waves-effect waves-light modal-trigger" data-target="userName" @click="passFileId(filelist[((i - 1) * 3) + (j - 1)])" style="width:100%">
+              <i class="material-icons small icon-demo">add</i>
             </div>
           </div>
         </div>
@@ -93,25 +131,32 @@ export default {
       required: true,
     },
         
-    filelist: {
+    fileList: {
       type: Array,
     },
   },
 
+  inject:['reload'],
+
   data () {
     return {
-      clientId: this.clientID,
+      // clientId: this.clientID,
+      clientId: '',
+      filelist: this.fileList,
       tagPool: null,
       tagChoose: null,
+      newFileName: '',
       testArray: [],
       queryString: '',
+      newUser: '',
+      passId: null,
       queryHandler: new Editor({
           extensions: [
             new Collaboration({
             socketServerBaseURL: 'http://127.0.0.1:6002',
             namespace: 'queryHandler',
             room: 'queryHandler',
-            clientID: this.clientId,
+            clientID: this.clientId || this.clientID,
 
             debounce: 250,
             keepFocusOnBlur: false,
@@ -147,7 +192,7 @@ export default {
 
   methods: {
     getDoc(doc) {
-      this.$emit('getDoc', doc.namespace, doc.room, doc.id, doc.tags);
+      this.$emit('getDoc', doc.namespace, doc.room, doc._id, doc.tags);
     },
 
     log() {
@@ -196,20 +241,66 @@ export default {
     },
 
     addFile() {
-      this.$http.post('http://127.0.0.1:3003/query', { cmd: 'addFile', account: this.clientID })
+      this.$http.post('http://127.0.0.1:3003/query', { cmd: 'addFile', account: this.clientId, name: this.newFileName })
         .then(res => {
           console.log(res);
+          this.$store.commit( 'dataSetting2', { 
+              filelist: res.data.fileList,
+              session: this.$store.getters.getSession,
+              clientID: this.$store.getters.getClientID,
+          })
+          return res.data.fileList;
+        })
+        .then((newList) => {
+          newList[newList.length - 1].isShow = true;
+          return newList[newList.length - 1];
+        })
+        .then((file) => {
+          this.filelist.push(file);
         });
+    },
+
+    refresh() {
+      // this.$emit('refresh');
+      // this.reload();
+    },
+
+    deleteFile(file, id) {
+      this.$http.post('http://127.0.0.1:3003/query', { cmd: 'deleteFile', account: this.clientId, name: file.room })
+        .then(res => {
+          console.log(res);
+          this.$store.commit( 'dataSetting2', { 
+              filelist: res.data.fileList,
+              session: this.$store.getters.getSession,
+              clientID: this.$store.getters.getClientID,
+          })
+        })
+        .then(() => this.filelist.splice( id, 1 ));
+    },
+
+    addUser() {
+      this.$http.post('http://127.0.0.1:3003/query', { cmd: 'addUser', account: this.clientId, name: { newUser: this.newUser, file: this.passId } })
+    },
+
+    passFileId(file) {
+      this.passId = file;
     },
   },
 
   mounted () {
     this.clientId = this.$store.getters.getClientID;
     this.filelist = this.$store.getters.getFileList;  
+    console.log(this.filelist);
+    console.log(this.clientId);
+    /*if (this.fileList != []) {
+        this.filelist = this.fileList;
+    }*/
     this.elem = document.querySelectorAll('.sidenav');
     this.instance = M.Sidenav.init(this.elem);
     this.elem2 = document.querySelectorAll('.collapsible');
     this.instance = M.Collapsible.init(this.elem2);
+    this.elem3 = document.querySelectorAll('.modal');
+    this.instance = M.Modal.init(this.elem3);
     this.filelist.forEach((file) => {
         file.isShow = true;
     });
@@ -257,8 +348,38 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .docs {
-  height:300px;
-  margin-bottom:20px;
+  height:250px;
+  margin-bottom:0px;
+  border-radius: 2px 2px 0 0;
+}
+
+.addUser {
+  border-radius: 0 0 2px 2px;
+}
+
+.card-title {
+  height: 60%;
+  overflow-wrap: break-word;
+  padding-right: 15px;
+}
+
+.card-content {
+  height: inherit;
+}
+
+.card-action {
+}
+
+.close {
+  margin-right: 0;
+  font-size: 2.5rem;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.cur-pointer {
+  cursor: pointer;
 }
 
 .row {

@@ -5,12 +5,13 @@
         @getID="getID"
         @getDoc="getDoc"
         @changeDoc="changeDoc"
+        @refresh="refresh"
         :namespace="namespace"
         :elementID="elementID"
         :room="room"
         :tags="docTags"
         :session="session"
-        :filelist="filelist"
+        :fileList="filelist"
         :clientID="clientID"/>
     </transition>
   </div>
@@ -29,6 +30,7 @@
         session: {},
         elementID: "",
         docTags: [], // 建index 的時候用來暫存正在編輯的文件的tag
+        isRouterAlive: true,
       }
     },
 
@@ -70,7 +72,22 @@
             this.filelist = doc;
       },
 
-    }
+      refresh() {
+        console.log(this);
+      },
+
+      reload () {
+        console.log('reload occure')
+        this.isRouterAlive = false;
+        this.$nextTick( ()=> { this.isRouterAlive=true } ) ;
+      },
+    },
+
+    provide(){
+      return {
+        reload: this.reload
+      }
+    },
   }
 </script>
 

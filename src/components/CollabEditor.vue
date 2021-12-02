@@ -421,7 +421,11 @@ export default {
     },
 
     commitIndex () {
-      this.editor.extensions.extensions.find((e) => e.name === 'collaboration').commitIndex()
+      try {
+        this.editor.extensions.extensions.find((e) => e.name === 'collaboration').commitIndex();
+      } catch (err) {
+        console.log(err);
+      }
     }
 
   },

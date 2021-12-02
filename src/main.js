@@ -55,6 +55,9 @@ const store = new Vuex.Store({
     getClientID: state => {
       return state.clientID
     },
+    getSession: state => {
+      return state.Session
+    },
   },
 
   // for Update Data state
@@ -63,6 +66,7 @@ const store = new Vuex.Store({
       // console.log("dataSetting");
       state.Session = payload.session;
       state.filelist = payload.filelist;
+      state.clientID = payload.clientID;
       state.isLogin = ( payload.session.passport != null )
     },
     dataSetting2 (state, payload) {
